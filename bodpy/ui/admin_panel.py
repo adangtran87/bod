@@ -30,4 +30,14 @@ class ButtonGetNfcId(ft.UserControl):
 
 class AdminPanel(ft.UserControl):
     def build(self):
-        return ft.Row(spacing=10, controls=[ButtonGetNfcId(), ButtonGetNfcId()])
+        return [
+            ft.Container(
+                margin=10,
+                padding=10,
+                content=ft.Row(
+                    spacing=10,
+                    alignment=ft.MainAxisAlignment.CENTER,
+                    controls=[ButtonGetNfcId(), ButtonGetNfcId()],
+                ),
+            )
+        ]
