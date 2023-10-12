@@ -1,5 +1,7 @@
 .DEFAULT_GOAL := all
 
+all: lint freeze
+
 clean:
 	rm -rf build
 	rm -rf dist
@@ -19,4 +21,6 @@ release:
 run:
 	python bodpy/bodpy.py
 
-all: lint freeze
+wsl:
+	sudo chown root:dialout /dev/ttyUSB0
+	sudo chmod 660 /dev/ttyUSB0
