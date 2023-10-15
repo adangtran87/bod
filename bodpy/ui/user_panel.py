@@ -1,5 +1,5 @@
+import asyncio
 from enum import Enum
-import time
 
 import flet as ft
 
@@ -18,22 +18,23 @@ class NfcTile(ft.UserControl):
         self.tile_type = tile_type
         self.transition = transition
 
-    def _on_click_show_id(self, e):
-        e.page.show_dialog(
+    async def _on_click_show_id(self, e):
+        await e.page.show_dialog_async(
             ft.AlertDialog(
                 modal=True, title=ft.Text("Scan Card", text_align=ft.TextAlign.CENTER)
             )
         )
-        self.nfc.connect()
-        e.page.close_dialog()
-        time.sleep(self.transition)
+        await asyncio.sleep(1)
+        await self.nfc.connect()
+        await e.page.close_dialog_async()
+        await asyncio.sleep(self.transition)
         if self.nfc.has_data():
-            data = self.nfc.get_data()
+            data = await self.nfc.get_data()
             dlg = ft.AlertDialog(title=ft.Text(f"Card Detected: {data['identifier']}"))
         else:
             dlg = ft.AlertDialog(title=ft.Text("No card detected"))
 
-        e.page.show_dialog(dlg)
+        await e.page.show_dialog_async(dlg)
 
     def build(self):
         on_click = self._on_click_show_id

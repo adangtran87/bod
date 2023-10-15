@@ -1,4 +1,4 @@
-import time
+import asyncio
 
 import flet as ft
 
@@ -13,19 +13,19 @@ class ButtonGetNfcId(ft.UserControl):
     def build(self):
         return ft.ElevatedButton(text="Get NFC Id", on_click=self.scan)
 
-    def scan(self, e):
-        e.page.show_dialog(ft.AlertDialog(title=ft.Text("Scanning...")))
-        self.nfc.connect()
-        e.page.close_dialog()
-        time.sleep(0.5)
+    async def scan(self, e):
+        await e.page.show_dialog_async(ft.AlertDialog(title=ft.Text("Scanning...")))
+        await self.nfc.connect()
+        await e.page.close_dialog_async()
+        await asyncio.sleep(0.5)
 
         if self.nfc.has_data():
-            data = self.nfc.get_data()
+            data = await self.nfc.get_data()
             dlg = ft.AlertDialog(title=ft.Text(f"Card Detected: {data['identifier']}"))
         else:
             dlg = ft.AlertDialog(title=ft.Text("No card detected"))
 
-        e.page.show_dialog(dlg)
+        await e.page.show_dialog_async(dlg)
 
 
 class AdminPanel(ft.UserControl):

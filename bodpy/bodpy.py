@@ -5,7 +5,7 @@ from ui.shop_panel import ShopPanel
 from ui.user_panel import UserPanel
 
 
-def main(page: ft.Page):
+async def main(page: ft.Page):
     page.title = "Filial Bank"
     page.vertical_alignment = ft.MainAxisAlignment.CENTER
 
@@ -20,7 +20,7 @@ def main(page: ft.Page):
         expand=1,
     )
 
-    page.add(t)
+    await page.add_async(t)
 
 
 if __name__ == "__main__":
