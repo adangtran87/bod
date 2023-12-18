@@ -3,7 +3,7 @@
 System for tracking fake currency through RFID cards
 
 ```sh
-make run
+hatch run app
 ```
 
 ## Setup
@@ -40,11 +40,8 @@ usbipd wsl attach --busid <bus_id>
 # Verify that you can see FTDI
 ls -al /dev/ttyUSB*
 
-# Add your user to dialout group
-sudo usermod -a -G dialout $USER
-
 # Set permissions
-make wsl
+hatch run wsl
 ```
 
 ## Weirdness

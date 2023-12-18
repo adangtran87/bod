@@ -1,0 +1,83 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "filial-bank"
+dynamic = ["version"]
+description = 'Parent and child arbitrary currency'
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = []
+authors = [{ name = "Alexander Dang-Tran", email = "alex.dangtran@gmail.com" }]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "fastapi",
+  "flet",
+  "nfcpy",
+  "PyInstaller",
+  "uvicorn",
+  "validators",
+]
+
+[project.urls]
+Documentation = "https://github.com/unknown/temporary#readme"
+Issues = "https://github.com/unknown/temporary/issues"
+Source = "https://github.com/unknown/temporary"
+
+[tool.hatch.version]
+path = "filial-bank/__about__.py"
+
+[tool.hatch.envs.default]
+dependencies = [
+  "coverage[toml]>=6.5",
+  "pytest",
+  "mypy>=1.0.0",
+  "flake8",
+  "black",
+]
+[tool.hatch.envs.default.scripts]
+app = ["python filial-bank/bodpy.py"]
+wsl = [
+  "sudo usermod -a -G dialout $USER",
+  "sudo chown root:dialout /dev/ttyUSB0",
+  "sudo chmod 660 /dev/ttyUSB0",
+]
+test = "pytest {args:tests}"
+test-cov = "coverage run -m pytest {args:tests}"
+cov-report = ["- coverage combine", "coverage report"]
+cov = ["test-cov", "cov-report"]
+check = ["flake8 .", "black --check --diff ."]
+lint = ["black .", "flake8 .", "mypy ."]
+release = ["flet pack filial-bank/bodpy.py"]
+[[tool.hatch.envs.all.matrix]]
+python = ["3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.types]
+dependencies = ["mypy>=1.0.0"]
+[tool.hatch.envs.types.scripts]
+check = "mypy --install-types --non-interactive {args:filial-bank tests}"
+
+[tool.coverage.run]
+source_pkgs = ["filial-bank", "tests"]
+branch = true
+parallel = true
+omit = ["filial-bank/__about__.py"]
+
+[tool.coverage.paths]
+temporary = ["filail-bank"]
+tests = ["tests"]
+
+[tool.coverage.report]
+exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
