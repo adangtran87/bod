@@ -1,15 +1,18 @@
 # Filial Bank
+
 System for tracking fake currency through RFID cards
 
-```
+```sh
 make run
 ```
 
-# Setup
+## Setup
+
 ## Development
+
 - Connect PN532 UART to FTDI
 
-```
+```sh
 # Create venv
 python -m venv ~/.venv/filialbank
 
@@ -18,18 +21,22 @@ pip install -r requirements.txt
 ```
 
 ### WSL Host
+
 - Mount FTDI into WSL guest using usbipd
 
-```
+<!-- markdownlint-disable -->
+```powershell
 usbipd wsl list
 usbipd wsl attach --busid <bus_id>
 
 # Example
 4-2    0403:6001  USB Serial Converter                                          Attached - WSL
 ```
+<!-- markdownlint-enable -->
 
 ### WSL Guest
-```
+
+```sh
 # Verify that you can see FTDI
 ls -al /dev/ttyUSB*
 
@@ -40,12 +47,14 @@ sudo usermod -a -G dialout $USER
 make wsl
 ```
 
-# Weirdness
+## Weirdness
+
 - PC -> FTDI -> PN532 didn't reliably after the first connection. Always got a
   connection error timeout
   - Need to use PC -> USB3 HUB -> FTDI -> PN532
 
-```
+<!-- markdownlint-disable -->
+```text
 (bod) ➜  bod git:(e8bb7ba) make run
 python bodpy/bodpy.py
 
@@ -73,3 +82,4 @@ Traceback (most recent call last):
   File "/home/alex/.venv/bod/lib/python3.8/site-packages/nfc/clf/transport.py", line 154, in read
     raise IOError(errno.ETIMEDOUT, os.strerror(errno.ETIMEDOUT))
 ```
+<!-- markdownlint-enable -->
