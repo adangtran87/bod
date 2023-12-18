@@ -60,7 +60,7 @@ cov-report = ["- coverage combine", "coverage report"]
 cov = ["test-cov", "cov-report"]
 check = ["flake8 .", "black --check --diff ."]
 lint = ["black .", "flake8 .", "mypy ."]
-release = ["flet pack filial-bank/bodpy.py"]
+release = ["flet pack filial-bank/filial-bank.py"]
 [[tool.hatch.envs.all.matrix]]
 python = ["3.10", "3.11", "3.12"]
 
