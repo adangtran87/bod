@@ -3,6 +3,7 @@
 System for tracking fake currency through RFID cards
 
 ```sh
+hatch env create
 hatch run app
 ```
 
@@ -14,10 +15,7 @@ hatch run app
 
 ```sh
 # Create venv
-python -m venv ~/.venv/filialbank
-
-# Install dependencies
-pip install -r requirements.txt
+hatch shell
 ```
 
 ### WSL Host
