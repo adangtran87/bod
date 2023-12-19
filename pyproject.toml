@@ -63,6 +63,7 @@ lint = ["black .", "flake8 .", "mypy ."]
 app-release = ["flet pack bank/app/app.py"]
 server-dev = ["uvicorn bank.server.server:app --reload"]
 server = ["uvicorn server.server:app"]
+editor = ["nvim README.md"]
 [[tool.hatch.envs.all.matrix]]
 python = ["3.10", "3.11", "3.12"]
 
