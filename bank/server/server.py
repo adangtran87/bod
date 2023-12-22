@@ -1,5 +1,6 @@
-from bank.models.models import Transaction
-from bank.models.rest import TransactionRest
+import uuid
+
+from bank.models.schemas import Account, Transaction
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -12,8 +13,11 @@ async def root():
 
 @app.get("/transactions")
 async def tranasactions_get():
-    return TransactionRest(
-        transactions=[
-            Transaction(sender="test", recipient="user", amount=10, notes=""),
-        ]
-    )
+    return [
+        Transaction(
+            sender=Account(name="bank", id=uuid.uuid4(), card_ids=[]),
+            recipient=Account(name="user", id=uuid.uuid4(), card_ids=[]),
+            amount=10,
+            notes="",
+        ),
+    ]
