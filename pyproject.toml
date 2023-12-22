@@ -43,6 +43,7 @@ path = "filial-bank/__about__.py"
 dependencies = [
   "coverage[toml]>=6.5",
   "pytest",
+  "pytest-asyncio",
   "mypy>=1.0.0",
   "flake8",
   "black",
