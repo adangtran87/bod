@@ -2,7 +2,7 @@ import typer
 
 from asyncio import run as aiorun
 
-from bank.database.accounts import create_account_table
+import bank.database.accounts as accounts
 
 app = typer.Typer()
 
@@ -14,7 +14,17 @@ def test():
 
 @app.command()
 def init_db():
-    aiorun(create_account_table())
+    aiorun(accounts.create_table())
+
+
+@app.command()
+def add_account(name: str):
+    aiorun(accounts.add_account(name))
+
+
+@app.command()
+def get_accounts():
+    print(aiorun(accounts.get_accounts()))
 
 
 if __name__ == "__main__":
