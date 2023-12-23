@@ -157,3 +157,24 @@ async def test_add_transaction(test_db):
         )
         assert t_id is not None
         assert t_id == 1
+
+
+@pytest.mark.asyncio
+async def test_get_transactions(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await transactions.create_table(db)
+        account_id = await accounts.add_account(db, "test")
+        assert account_id is not None
+        _ = await transactions.add_transaction(
+            db, account_id=account_id, value=10.0, note=""
+        )
+        _ = await transactions.add_transaction(
+            db, account_id=account_id, value=20.0, note=""
+        )
+        _ = await transactions.add_transaction(
+            db, account_id=account_id, value=1.0, note=""
+        )
+        data = await transactions.get_transactions(db)
+        assert len(data) == 3
+        assert data[0].value == 10.0

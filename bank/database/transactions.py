@@ -22,6 +22,10 @@ INSERT INTO transactions (account_id, value, note)
 VALUES (?, ?, ?);
 """
 
+GET_ALL_TRANSACTIONS = """
+SELECT * from transactions;
+"""
+
 
 class Transaction(BaseModel):
     id: int
@@ -44,3 +48,18 @@ async def add_transaction(
     cursor = await db.execute(ADD_TRANSACTION, [account_id, value, note])
     await db.commit()
     return cursor.lastrowid
+
+
+async def get_transactions(db: aiosqlite.Connection) -> list[Transaction]:
+    db.row_factory = aiosqlite.Row
+    cursor = await db.execute(GET_ALL_TRANSACTIONS)
+    rows = await cursor.fetchall()
+    return [
+        Transaction(
+            id=row["id"],
+            value=row["value"],
+            account_id=row["account_id"],
+            note=row["note"],
+        )
+        for row in rows
+    ]
