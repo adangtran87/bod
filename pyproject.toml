@@ -27,6 +27,7 @@ dependencies = [
   "flet",
   "nfcpy",
   "PyInstaller",
+  "result",
   "uvicorn",
   "validators",
 ]
