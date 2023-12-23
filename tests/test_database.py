@@ -86,3 +86,13 @@ async def test_cursor_lastrowid(test_db):
         await accounts.delete_account(db, id=1)
         last_row = await accounts.add_account(db, "test3")
         assert last_row == 3
+
+
+@pytest.mark.asyncio
+async def test_count_account_name(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await accounts.add_account(db, "test2")
+        assert await accounts.account_exists(db, "test") is False
+        await accounts.add_account(db, "test")
+        assert await accounts.account_exists(db, "test") is True

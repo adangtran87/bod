@@ -72,6 +72,16 @@ async def get_account_by_name(db: aiosqlite.Connection, name: str):
     return [Account(id=row["id"], name=row["name"]) for row in rows]
 
 
+async def account_exists(db: aiosqlite.Connection, name: str) -> int:
+    db.row_factory = aiosqlite.Row
+    cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": name})
+    cursor = await db.execute(cmd)
+    row = await cursor.fetchone()
+    if row:
+        return True
+    return False
+
+
 async def delete_account(
     db: aiosqlite.Connection, id: Optional[int] = None, name: Optional[str] = None
 ):
