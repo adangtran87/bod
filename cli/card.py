@@ -3,7 +3,7 @@ from pprint import pprint
 from typing_extensions import Annotated
 
 import typer
-from result import Err, Ok, Result
+from result import Ok
 
 import bank.database.cards as cards
 import bank.database.database as database

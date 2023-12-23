@@ -2,13 +2,11 @@ from asyncio import run as aiorun
 from pprint import pprint
 from typing_extensions import Annotated
 from typing import Optional
-from pydantic_core.core_schema import NoneSchema
 
 import typer
 from result import Err, Ok, Result
 
 import bank.database.accounts as accounts
-import bank.database.cards as cards
 import bank.database.database as database
 
 from cli.utils import scan_card
