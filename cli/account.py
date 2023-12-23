@@ -81,3 +81,29 @@ def dump():
             return await accounts.get_accounts(db)
 
     pprint(aiorun(_get_accounts()))
+
+
+@app.command()
+def scan(
+    device: Annotated[
+        str, typer.Option(help="Device location string")
+    ] = "tty:USB0:pn532",
+):
+    async def _get_account_from_card(device) -> Result[accounts.Account, str]:
+        r = await scan_card(device)
+        if isinstance(r, Ok):
+            card_id = r.ok_value
+            async with await database.get_db() as db:
+                account = await accounts.get_account_from_card(db, card_id=card_id)
+                if account:
+                    return Ok(account)
+                else:
+                    return Err(f"No account registered to card: {card_id}")
+        else:
+            return Err(r.err_value)
+
+    r = aiorun(_get_account_from_card(device))
+    if isinstance(r, Ok):
+        pprint(r.ok_value)
+    else:
+        pprint(r.err_value)

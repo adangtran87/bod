@@ -35,6 +35,15 @@ SELECT * FROM accounts WHERE (name = "${name}");
 """
 )
 
+GET_ACCOUNT_BY_CARD = Template(
+    """
+SELECT accounts.id, accounts.name
+FROM accounts
+INNER JOIN cards ON cards.account_id == accounts.id
+WHERE cards.id == "${id}";
+"""
+)
+
 DELETE_ACCOUNT_BY_NAME = Template(
     """
 DELETE FROM accounts WHERE (name = "${name}");
@@ -92,6 +101,19 @@ async def get_account_by_name(db: aiosqlite.Connection, name: str):
     cursor = await db.execute(cmd)
     rows = await cursor.fetchall()
     return [Account(id=row["id"], name=row["name"]) for row in rows]
+
+
+async def get_account_from_card(
+    db: aiosqlite.Connection, card_id: str
+) -> Account | None:
+    db.row_factory = aiosqlite.Row
+    cmd = GET_ACCOUNT_BY_CARD.safe_substitute({"id": card_id})
+    cursor = await db.execute(cmd)
+    row = await cursor.fetchone()
+    if row:
+        return Account(id=row["id"], name=row["name"])
+    else:
+        return None
 
 
 async def account_exists(

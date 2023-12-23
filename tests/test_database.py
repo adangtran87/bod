@@ -110,3 +110,17 @@ async def test_account_create_with_card(test_db):
         assert len(data_cards) == 1
         card = data_cards[0]
         assert card.account_id == account_id
+
+
+@pytest.mark.asyncio
+async def test_get_account_from_card_id(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await cards.create_table(db)
+        await accounts.add_account(db, "test2")
+        await accounts.add_account_with_card(db, "test", "test_card_id")
+        account = await accounts.get_account_from_card(db, "test_card_id")
+
+        assert account is not None
+        assert account.id == 2
+        assert account.name == "test"
