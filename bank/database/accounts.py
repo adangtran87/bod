@@ -99,9 +99,16 @@ async def get_accounts(db: aiosqlite.Connection) -> list[Account]:
     return [Account(id=row["id"], name=row["name"]) for row in rows]
 
 
-async def get_account_by_name(db: aiosqlite.Connection, name: str) -> Account | None:
+async def get_account(db: aiosqlite.Connection, search: int | str) -> Account | None:
+    """
+    Get account by id or name
+    """
     db.row_factory = aiosqlite.Row
-    cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": name})
+    if isinstance(search, int):
+        cmd = GET_ACCOUNT_BY_ID.safe_substitute({"id": search})
+    else:
+        cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": search})
+
     cursor = await db.execute(cmd)
     row = await cursor.fetchone()
     if row:
