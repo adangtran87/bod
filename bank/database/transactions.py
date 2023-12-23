@@ -2,7 +2,7 @@ import aiosqlite
 
 from pydantic import BaseModel
 
-from bank.database.accounts import account_exists
+from bank.database.accounts import account_exists, get_account_from_card
 
 CREATE_TRANSACTIONS_TABLE = """
 CREATE TABLE IF NOT EXISTS transactions (
@@ -39,13 +39,13 @@ async def create_table(db: aiosqlite.Connection):
     await db.commit()
 
 
-async def add_transaction(
-    db: aiosqlite.Connection, account_id: int, value: float, note: str | None = None
-) -> int | None:
+async def add_transaction(db: aiosqlite.Connection, t: Transaction) -> int | None:
     """Add transaction to account if account exists, else do nothing"""
-    if not await account_exists(db, search=account_id):
+    if t.account_id is None:
         return None
-    cursor = await db.execute(ADD_TRANSACTION, [account_id, value, note])
+    if not await account_exists(db, search=t.account_id):
+        return None
+    cursor = await db.execute(ADD_TRANSACTION, [t.account_id, t.value, t.note])
     await db.commit()
     return cursor.lastrowid
 
@@ -63,3 +63,19 @@ async def get_transactions(db: aiosqlite.Connection) -> list[Transaction]:
         )
         for row in rows
     ]
+
+
+async def add_transaction_from_card_id(
+    db: aiosqlite.Connection, card_id: str, t: Transaction
+) -> int | None:
+    """
+    Look up account from card and add a transaction
+
+    t.id is not used when creating a transaction
+    """
+    account = await get_account_from_card(db, card_id)
+    if account:
+        t.account_id = account.id
+        return await add_transaction(db, t)
+    else:
+        return None
