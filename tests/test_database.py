@@ -30,3 +30,21 @@ async def test_create_cards(test_db):
         assert len(data) == 1
         entry = data[0]
         assert entry.id == "cardid"
+
+
+@pytest.mark.asyncio
+async def test_link_cards_to_account(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await cards.create_table(db)
+        await accounts.add_account(db, "test")
+        card = cards.Card(
+            id="cardid", type=cards.CardType.ACCOUNT, account_id=1, value=None
+        )
+        await cards.add_card(db, card)
+
+        data: list[cards.Card] = await cards.get_cards(db)
+        assert len(data) == 1
+        entry = data[0]
+        assert entry.id == "cardid"
+        assert entry.account_id == 1
