@@ -6,13 +6,12 @@ import asyncio
 
 
 class NfcDevice(object):
-    def __init__(
-        self,
-    ):
+    def __init__(self, device_loc: str):
         self.data_valid = False
         self.tag_data = {
             "identifier": "",
         }
+        self.device_loc = device_loc
 
     def _on_startup(self, targets):
         return targets
@@ -46,7 +45,7 @@ class NfcDevice(object):
         loop = asyncio.get_event_loop()
 
         # TODO: Do not hardcode device path
-        with nfc.ContactlessFrontend("tty:USB0:pn532") as clf:
+        with nfc.ContactlessFrontend(self.device_loc) as clf:
             await loop.run_in_executor(
                 None, partial(clf.connect, rdwr=rdwr_options, terminate=after5s)
             )

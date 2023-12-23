@@ -3,7 +3,7 @@ from enum import Enum
 
 import flet as ft
 
-from nfcutils.nfcutils import NfcDevice
+from bank.app.nfcutils.nfcutils import NfcDevice
 
 
 class NfcTileType(Enum):
@@ -13,7 +13,7 @@ class NfcTileType(Enum):
 class NfcTile(ft.UserControl):
     def __init__(self, title: str, tile_type: NfcTileType, transition: float = 0.2):
         super().__init__()
-        self.nfc = NfcDevice()
+        self.nfc = NfcDevice("tty:USB0:pn532")
         self.title = title
         self.tile_type = tile_type
         self.transition = transition

@@ -8,7 +8,7 @@ from nfcutils.nfcutils import NfcDevice
 class ButtonGetNfcId(ft.UserControl):
     def __init__(self):
         super().__init__()
-        self.nfc = NfcDevice()
+        self.nfc = NfcDevice("tty:USB0:pn532")
 
     def build(self):
         return ft.ElevatedButton(text="Get NFC Id", on_click=self.scan)
