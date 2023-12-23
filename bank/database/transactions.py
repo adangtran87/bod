@@ -26,6 +26,14 @@ GET_ALL_TRANSACTIONS = """
 SELECT * from transactions;
 """
 
+GET_TRANSACTIONS_FOR_ACCOUNT = """
+SELECT t.id, t.value, t.account_id, t.note
+FROM transactions AS t
+INNER JOIN accounts AS a
+ON a.id == t.account_id
+WHERE t.account_id == ?;
+"""
+
 
 class Transaction(BaseModel):
     id: int
@@ -79,3 +87,24 @@ async def add_transaction_from_card_id(
         return await add_transaction(db, t)
     else:
         return None
+
+
+async def get_transactions_for_account(
+    db: aiosqlite.Connection, account_id: int
+) -> list[Transaction]:
+    """
+    Get all transactions for an account
+    """
+    db.row_factory = aiosqlite.Row
+    cursor = await db.execute(GET_TRANSACTIONS_FOR_ACCOUNT, [account_id])
+    print("passed")
+    rows = await cursor.fetchall()
+    return [
+        Transaction(
+            id=row["id"],
+            value=row["value"],
+            account_id=row["account_id"],
+            note=row["note"],
+        )
+        for row in rows
+    ]

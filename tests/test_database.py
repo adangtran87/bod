@@ -205,11 +205,8 @@ async def test_get_transactions(test_db):
 
 
 @pytest.mark.asyncio
-async def test_add_transaction_from_card_id(test_db):
-    async with await test_db as db:
-        await accounts.create_table(db)
-        await cards.create_table(db)
-        await transactions.create_table(db)
+async def test_add_transaction_from_card_id(init_db):
+    async for db in init_db:
         account_id = await accounts.add_account_with_card(db, "test", "test_card_id")
         t = transactions.Transaction(
             id=0,  # not used
@@ -228,3 +225,46 @@ async def test_add_transaction_from_card_id(test_db):
         assert row.value == t.value
         assert row.note == t.note
         assert row.id != t.id
+
+
+@pytest.mark.asyncio
+async def test_get_transactions_for_account(init_db):
+    async for db in init_db:
+        account1 = await accounts.add_account(db, "test")
+        assert account1 is not None
+        t = transactions.Transaction(
+            id=0,  # not used
+            account_id=account1,
+            value=10.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t)
+        assert t_id is not None
+        t2 = transactions.Transaction(
+            id=0,  # not used
+            account_id=account1,
+            value=20.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t2)
+        assert t_id is not None
+
+        account2 = await accounts.add_account(db, "test2")
+        assert account2 is not None
+        t3 = transactions.Transaction(
+            id=0,  # not used
+            account_id=account2,
+            value=30.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t3)
+        assert t_id is not None
+
+        data1 = await transactions.get_transactions_for_account(db, account_id=1)
+        assert len(data1) == 2
+
+        data2 = await transactions.get_transactions_for_account(db, account_id=account2)
+        assert len(data2) == 1
+
+        data_null = await transactions.get_transactions_for_account(db, account_id=100)
+        assert len(data_null) == 0
