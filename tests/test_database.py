@@ -30,7 +30,7 @@ async def test_create_cards(test_db):
 
         assert len(data) == 1
         entry = data[0]
-        assert entry.id == "cardid"
+        assert entry.id == card.id
 
 
 @pytest.mark.asyncio
@@ -47,8 +47,8 @@ async def test_link_cards_to_account(test_db):
         data: list[cards.Card] = await cards.get_cards(db)
         assert len(data) == 1
         entry = data[0]
-        assert entry.id == "cardid"
-        assert entry.account_id == 1
+        assert entry.id == card.id
+        assert entry.account_id == card.account_id
 
 
 @pytest.mark.asyncio
