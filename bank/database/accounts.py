@@ -4,6 +4,8 @@ from pydantic import BaseModel
 from string import Template
 from typing import Optional
 
+import bank.database.cards as cards
+
 CREATE_ACCOUNTS_TABLE = """
 CREATE TABLE IF NOT EXISTS accounts (
     id INTEGER PRIMARY KEY,
@@ -20,6 +22,12 @@ INSERT INTO accounts (name) VALUES ("${name}");
 GET_ALL_ACCOUNTS = """
 SELECT * FROM accounts;
 """
+
+GET_ACCOUNT_BY_ID = Template(
+    """
+SELECT * FROM accounts WHERE (id = ${id});
+"""
+)
 
 GET_ACCOUNT_BY_NAME = Template(
     """
@@ -57,6 +65,20 @@ async def add_account(db: aiosqlite.Connection, name: str) -> Optional[int]:
     return cursor.lastrowid
 
 
+async def add_account_with_card(
+    db: aiosqlite.Connection, name: str, card_id: str
+) -> Optional[int]:
+    account_id = await add_account(db, name)
+    card = cards.Card(
+        id=card_id,
+        type=cards.CardType.ACCOUNT,
+        account_id=account_id,
+        value=None,
+    )
+    await cards.add_card(db, card)
+    return account_id
+
+
 async def get_accounts(db: aiosqlite.Connection) -> list[Account]:
     db.row_factory = aiosqlite.Row
     cursor = await db.execute(GET_ALL_ACCOUNTS)
@@ -72,9 +94,17 @@ async def get_account_by_name(db: aiosqlite.Connection, name: str):
     return [Account(id=row["id"], name=row["name"]) for row in rows]
 
 
-async def account_exists(db: aiosqlite.Connection, name: str) -> int:
+async def account_exists(
+    db: aiosqlite.Connection, id: int | None = None, name: str | None = None
+) -> int:
     db.row_factory = aiosqlite.Row
-    cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": name})
+    if id:
+        cmd = GET_ACCOUNT_BY_ID.safe_substitute({"id": id})
+    elif name:
+        cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": name})
+    else:
+        raise RuntimeError("Called account_exists without any parameters")
+
     cursor = await db.execute(cmd)
     row = await cursor.fetchone()
     if row:

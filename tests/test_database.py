@@ -89,10 +89,24 @@ async def test_cursor_lastrowid(test_db):
 
 
 @pytest.mark.asyncio
-async def test_count_account_name(test_db):
+async def test_account_exists(test_db):
     async with await test_db as db:
         await accounts.create_table(db)
         await accounts.add_account(db, "test2")
-        assert await accounts.account_exists(db, "test") is False
+        assert await accounts.account_exists(db, name="test") is False
         await accounts.add_account(db, "test")
-        assert await accounts.account_exists(db, "test") is True
+        assert await accounts.account_exists(db, name="test") is True
+
+
+@pytest.mark.asyncio
+async def test_account_create_with_card(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await cards.create_table(db)
+        account_id = await accounts.add_account_with_card(db, "test", "test_card_id")
+        data_accounts = await accounts.get_accounts(db)
+        assert len(data_accounts) == 1
+        data_cards = await cards.get_cards(db)
+        assert len(data_cards) == 1
+        card = data_cards[0]
+        assert card.account_id == account_id
