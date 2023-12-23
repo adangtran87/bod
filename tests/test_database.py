@@ -48,3 +48,15 @@ async def test_link_cards_to_account(test_db):
         entry = data[0]
         assert entry.id == "cardid"
         assert entry.account_id == 1
+
+
+@pytest.mark.asyncio
+async def test_get_account_by_name(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await accounts.add_account(db, "test2")
+        await accounts.add_account(db, "test")
+        data: list[accounts.Account] = await accounts.get_account_by_name(db, "test")
+        assert len(data) == 1
+        entry = data[0]
+        assert entry.id == 2
