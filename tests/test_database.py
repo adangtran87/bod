@@ -57,10 +57,12 @@ async def test_get_account_by_name(test_db):
         await accounts.create_table(db)
         await accounts.add_account(db, "test2")
         await accounts.add_account(db, "test")
-        data: list[accounts.Account] = await accounts.get_account_by_name(db, "test")
-        assert len(data) == 1
-        entry = data[0]
-        assert entry.id == 2
+        data: accounts.Account | None = await accounts.get_account_by_name(db, "test")
+        assert data is not None
+        assert data.id == 2
+
+        data: accounts.Account | None = await accounts.get_account_by_name(db, "foo")
+        assert data is None
 
 
 @pytest.mark.asyncio
@@ -70,11 +72,13 @@ async def test_delete_account(test_db):
         await accounts.add_account(db, "test2")
         await accounts.add_account(db, "test")
         await accounts.delete_account(db, id=1)
-        data: list[accounts.Account] = await accounts.get_account_by_name(db, "test")
-        assert len(data) == 1
-        entry = data[0]
-        assert entry.id == 2
-        assert entry.name == "test"
+        data: accounts.Account | None = await accounts.get_account_by_name(db, "test")
+        assert data is not None
+        assert data.name == "test"
+        del_account: accounts.Account | None = await accounts.get_account_by_name(
+            db, "foo"
+        )
+        assert del_account is None
 
 
 @pytest.mark.asyncio
@@ -126,3 +130,13 @@ async def test_get_account_from_card_id(test_db):
         assert account is not None
         assert account.id == 2
         assert account.name == "test"
+
+
+@pytest.mark.asyncio
+async def test_add_same_account_name(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        account_id = await accounts.add_account(db, "test2")
+        assert account_id == 1
+        account_id = await accounts.add_account(db, "test2")
+        assert account_id is None

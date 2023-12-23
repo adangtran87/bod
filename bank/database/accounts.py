@@ -69,9 +69,13 @@ async def create_table(db: aiosqlite.Connection):
 
 async def add_account(db: aiosqlite.Connection, name: str) -> Optional[int]:
     cmd = ADD_ACCOUNT.safe_substitute({"name": name})
-    cursor = await db.execute(cmd)
-    await db.commit()
-    return cursor.lastrowid
+    try:
+        cursor = await db.execute(cmd)
+        await db.commit()
+        return cursor.lastrowid
+    # Unique constraint failed
+    except aiosqlite.IntegrityError:
+        return None
 
 
 async def add_account_with_card(
@@ -95,12 +99,15 @@ async def get_accounts(db: aiosqlite.Connection) -> list[Account]:
     return [Account(id=row["id"], name=row["name"]) for row in rows]
 
 
-async def get_account_by_name(db: aiosqlite.Connection, name: str):
+async def get_account_by_name(db: aiosqlite.Connection, name: str) -> Account | None:
     db.row_factory = aiosqlite.Row
     cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": name})
     cursor = await db.execute(cmd)
-    rows = await cursor.fetchall()
-    return [Account(id=row["id"], name=row["name"]) for row in rows]
+    row = await cursor.fetchone()
+    if row:
+        return Account(id=row["id"], name=row["name"])
+    else:
+        return None
 
 
 async def get_account_from_card(
