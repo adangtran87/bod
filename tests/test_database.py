@@ -8,13 +8,14 @@ import bank.database.cards as cards
 async def test_account_create(test_db):
     async with await test_db as db:
         await accounts.create_table(db)
-        await accounts.add_account(db, "test")
+        last_row = await accounts.add_account(db, "test")
         data: list[accounts.Account] = await accounts.get_accounts(db)
 
         assert len(data) == 1
         entry = data[0]
         assert entry.name == "test"
         assert entry.id == 1
+        assert last_row == 1
 
 
 @pytest.mark.asyncio
@@ -60,3 +61,28 @@ async def test_get_account_by_name(test_db):
         assert len(data) == 1
         entry = data[0]
         assert entry.id == 2
+
+
+@pytest.mark.asyncio
+async def test_delete_account(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await accounts.add_account(db, "test2")
+        await accounts.add_account(db, "test")
+        await accounts.delete_account(db, id=1)
+        data: list[accounts.Account] = await accounts.get_account_by_name(db, "test")
+        assert len(data) == 1
+        entry = data[0]
+        assert entry.id == 2
+        assert entry.name == "test"
+
+
+@pytest.mark.asyncio
+async def test_cursor_lastrowid(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await accounts.add_account(db, "test2")
+        await accounts.add_account(db, "test")
+        await accounts.delete_account(db, id=1)
+        last_row = await accounts.add_account(db, "test3")
+        assert last_row == 3

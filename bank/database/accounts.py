@@ -2,6 +2,7 @@ import aiosqlite
 
 from pydantic import BaseModel
 from string import Template
+from typing import Optional
 
 CREATE_ACCOUNTS_TABLE = """
 CREATE TABLE IF NOT EXISTS accounts (
@@ -26,6 +27,18 @@ SELECT * FROM accounts WHERE (name = "${name}");
 """
 )
 
+DELETE_ACCOUNT_BY_NAME = Template(
+    """
+DELETE FROM accounts WHERE (name = "${name}");
+"""
+)
+
+DELETE_ACCOUNT_BY_ID = Template(
+    """
+DELETE FROM accounts WHERE (id = ${id});
+"""
+)
+
 
 class Account(BaseModel):
     id: int
@@ -37,10 +50,11 @@ async def create_table(db: aiosqlite.Connection):
     await db.commit()
 
 
-async def add_account(db: aiosqlite.Connection, name: str):
+async def add_account(db: aiosqlite.Connection, name: str) -> Optional[int]:
     cmd = ADD_ACCOUNT.safe_substitute({"name": name})
-    await db.execute(cmd)
+    cursor = await db.execute(cmd)
     await db.commit()
+    return cursor.lastrowid
 
 
 async def get_accounts(db: aiosqlite.Connection) -> list[Account]:
@@ -56,3 +70,17 @@ async def get_account_by_name(db: aiosqlite.Connection, name: str):
     cursor = await db.execute(cmd)
     rows = await cursor.fetchall()
     return [Account(id=row["id"], name=row["name"]) for row in rows]
+
+
+async def delete_account(
+    db: aiosqlite.Connection, id: Optional[int] = None, name: Optional[str] = None
+):
+    if id:
+        cmd = DELETE_ACCOUNT_BY_ID.safe_substitute({"id": id})
+    elif name:
+        cmd = DELETE_ACCOUNT_BY_NAME.safe_substitute({"name": name})
+    else:
+        raise RuntimeError("No arguments sent to delete_account")
+
+    await db.execute(cmd)
+    await db.commit()
