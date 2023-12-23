@@ -2,6 +2,7 @@ import pytest
 
 import bank.database.accounts as accounts
 import bank.database.cards as cards
+import bank.database.transactions as transactions
 
 
 @pytest.mark.asyncio
@@ -140,3 +141,19 @@ async def test_add_same_account_name(test_db):
         assert account_id == 1
         account_id = await accounts.add_account(db, "test2")
         assert account_id is None
+
+
+@pytest.mark.asyncio
+async def test_add_transaction(test_db):
+    async with await test_db as db:
+        await accounts.create_table(db)
+        await transactions.create_table(db)
+        t_id = await transactions.add_transaction(db, account_id=1, value=10.0, note="")
+        assert t_id is None
+        account_id = await accounts.add_account(db, "test")
+        assert account_id is not None
+        t_id = await transactions.add_transaction(
+            db, account_id=account_id, value=10.0, note=""
+        )
+        assert t_id is not None
+        assert t_id == 1

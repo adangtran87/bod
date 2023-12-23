@@ -5,6 +5,7 @@ import typer
 import bank.database.accounts as accounts
 import bank.database.cards as cards
 import bank.database.database as database
+import bank.database.transactions as transactions
 
 app = typer.Typer()
 
@@ -15,6 +16,7 @@ def init():
         async with await database.get_db() as db:
             await accounts.create_table(db)
             await cards.create_table(db)
+            await transactions.create_table(db)
 
     aiorun(_init_db())
 
