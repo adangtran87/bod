@@ -116,16 +116,15 @@ async def get_account_from_card(
         return None
 
 
-async def account_exists(
-    db: aiosqlite.Connection, id: int | None = None, name: str | None = None
-) -> int:
+async def account_exists(db: aiosqlite.Connection, search: int | str) -> int:
+    """
+    Check if an account exists by id[int] or name[str]
+    """
     db.row_factory = aiosqlite.Row
-    if id:
-        cmd = GET_ACCOUNT_BY_ID.safe_substitute({"id": id})
-    elif name:
-        cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": name})
+    if isinstance(search, int):
+        cmd = GET_ACCOUNT_BY_ID.safe_substitute({"id": search})
     else:
-        raise RuntimeError("Called account_exists without any parameters")
+        cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": search})
 
     cursor = await db.execute(cmd)
     row = await cursor.fetchone()

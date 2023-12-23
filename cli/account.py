@@ -25,7 +25,7 @@ def add(
     async def _add_account(name: str, scan: bool, device: str) -> Result[dict, str]:
         async with await database.get_db() as db:
             # Check if card exists
-            if await accounts.account_exists(db, None, name):
+            if await accounts.account_exists(db, name):
                 return Err(f"Account {name} already exists")
 
             # Scan card
@@ -63,15 +63,20 @@ def delete(
     id: Annotated[Optional[int], typer.Option(help="account id")] = None,
     name: Annotated[Optional[str], typer.Option(help="account id")] = None,
 ):
-    async def _delete_account(id: int | None, name: str | None) -> Result[None, str]:
+    async def _delete_account(search: int | str) -> Result[None, str]:
         async with await database.get_db() as db:
-            if not await accounts.account_exists(db, id, name):
-                return Err(f"No account with id: {id} name: {name}")
+            if not await accounts.account_exists(db, search):
+                return Err(f"No account found when searching for {search}")
 
             await accounts.delete_account(db, id, name)
             return Ok(None)
 
-    aiorun(_delete_account(id, name))
+    if id:
+        aiorun(_delete_account(id))
+    elif name:
+        aiorun(_delete_account(name))
+    else:
+        print("ERROR: Need to provide --id or --name")
 
 
 @app.command()

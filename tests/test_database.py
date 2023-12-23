@@ -93,9 +93,11 @@ async def test_account_exists(test_db):
     async with await test_db as db:
         await accounts.create_table(db)
         await accounts.add_account(db, "test2")
-        assert await accounts.account_exists(db, name="test") is False
+        assert await accounts.account_exists(db, "test") is False
+        assert await accounts.account_exists(db, 2) is False
         await accounts.add_account(db, "test")
-        assert await accounts.account_exists(db, name="test") is True
+        assert await accounts.account_exists(db, "test") is True
+        assert await accounts.account_exists(db, 2) is True
 
 
 @pytest.mark.asyncio
