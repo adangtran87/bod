@@ -67,7 +67,7 @@ server-dev = ["uvicorn bank.server.server:app --reload"]
 server = ["uvicorn server.server:app"]
 editor = ["nvim README.md"]
 cli = ["python cli.py {args}"]
-wc = ["find . -name '*.py' | xargs wc -l | sort -nr"]
+lc = ["find . -name '*.py' | xargs wc -l | sort -nr"]
 [[tool.hatch.envs.all.matrix]]
 python = ["3.10", "3.11", "3.12"]
 
