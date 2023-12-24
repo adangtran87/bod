@@ -25,7 +25,8 @@ VALUES (?, ?, ?, ?);
 """
 
 GET_ALL_TRANSACTIONS = """
-SELECT * from transactions;
+SELECT * from transactions
+ORDER BY date DESC;
 """
 
 GET_TRANSACTIONS_FOR_ACCOUNT = """
@@ -33,7 +34,8 @@ SELECT t.id, t.date, t.value, t.account_id, t.note
 FROM transactions AS t
 INNER JOIN accounts AS a
 ON a.id == t.account_id
-WHERE t.account_id == ?;
+WHERE t.account_id == ?
+ORDER BY date DESC;
 """
 
 GET_TOTAL_FOR_ACCOUNT = """
