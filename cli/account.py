@@ -133,9 +133,11 @@ def info(
     """
     if (id and name) or (id and scan) or (name and scan):
         print("Only use **one of** --id, --name, --scan")
+        return
 
     if not (id or name or scan):
         print("Please use **one** of --id, n--name, --scan")
+        return
 
     r = aiorun(_get_account_info(id, name, scan, device))
     if isinstance(r, Ok):
