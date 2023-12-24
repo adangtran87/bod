@@ -268,3 +268,41 @@ async def test_get_transactions_for_account(init_db):
 
         data_null = await transactions.get_transactions_for_account(db, account_id=100)
         assert len(data_null) == 0
+
+
+@pytest.mark.asyncio
+async def test_get_total_for_account(init_db):
+    async for db in init_db:
+        account1 = await accounts.add_account(db, "test")
+        assert account1 is not None
+        t = transactions.Transaction(
+            id=0,  # not used
+            account_id=account1,
+            value=10.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t)
+        assert t_id is not None
+        t2 = transactions.Transaction(
+            id=0,  # not used
+            account_id=account1,
+            value=20.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t2)
+        assert t_id is not None
+
+        account2 = await accounts.add_account(db, "test2")
+        assert account2 is not None
+        t3 = transactions.Transaction(
+            id=0,  # not used
+            account_id=account2,
+            value=30.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t3)
+        assert t_id is not None
+
+        assert await transactions.get_total_for_account(db, account1) == 30
+        assert await transactions.get_total_for_account(db, account2) == 30
+        assert await transactions.get_total_for_account(db, 100) is None

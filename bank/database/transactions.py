@@ -34,6 +34,14 @@ ON a.id == t.account_id
 WHERE t.account_id == ?;
 """
 
+GET_TOTAL_FOR_ACCOUNT = """
+SELECT SUM(t.value)
+FROM transactions AS t
+INNER JOIN accounts AS a
+ON a.id == t.account_id
+WHERE t.account_id == ?;
+"""
+
 
 class Transaction(BaseModel):
     id: int
@@ -97,7 +105,6 @@ async def get_transactions_for_account(
     """
     db.row_factory = aiosqlite.Row
     cursor = await db.execute(GET_TRANSACTIONS_FOR_ACCOUNT, [account_id])
-    print("passed")
     rows = await cursor.fetchall()
     return [
         Transaction(
@@ -108,3 +115,15 @@ async def get_transactions_for_account(
         )
         for row in rows
     ]
+
+
+async def get_total_for_account(
+    db: aiosqlite.Connection, account_id: int
+) -> float | None:
+    """Sum up all transactions for account"""
+    cursor = await db.execute(GET_TOTAL_FOR_ACCOUNT, [account_id])
+    row = await cursor.fetchone()
+    if row:
+        return row[0]
+    else:
+        return None
