@@ -1,4 +1,5 @@
 from bank.models.schemas import Transaction
+from bank.version import VERSION
 from fastapi import FastAPI
 
 app = FastAPI()
@@ -6,7 +7,7 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return {"version": "0.1.0"}
+    return {"version": VERSION}
 
 
 @app.get("/transactions")
