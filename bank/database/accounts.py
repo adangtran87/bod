@@ -1,7 +1,6 @@
 import aiosqlite
 
 from pydantic import BaseModel
-from string import Template
 from typing import Optional
 
 import bank.database.cards as cards
@@ -13,48 +12,39 @@ CREATE TABLE IF NOT EXISTS accounts (
 );
 """
 
-ADD_ACCOUNT = Template(
-    """
-INSERT INTO accounts (name) VALUES ("${name}");
+ADD_ACCOUNT = """
+INSERT INTO accounts (name)
+VALUES (?);
 """
-)
 
 GET_ALL_ACCOUNTS = """
 SELECT * FROM accounts;
 """
 
-GET_ACCOUNT_BY_ID = Template(
-    """
-SELECT * FROM accounts WHERE (id = ${id});
+GET_ACCOUNT_BY_ID = """
+SELECT * FROM accounts
+WHERE (id = ?);
 """
-)
 
-GET_ACCOUNT_BY_NAME = Template(
-    """
-SELECT * FROM accounts WHERE (name = "${name}");
+GET_ACCOUNT_BY_NAME = """
+SELECT * FROM accounts
+WHERE (name = ?);
 """
-)
 
-GET_ACCOUNT_BY_CARD = Template(
-    """
+GET_ACCOUNT_BY_CARD = """
 SELECT accounts.id, accounts.name
 FROM accounts
 INNER JOIN cards ON cards.account_id == accounts.id
-WHERE cards.id == "${id}";
+WHERE cards.id == ?;
 """
-)
 
-DELETE_ACCOUNT_BY_NAME = Template(
-    """
-DELETE FROM accounts WHERE (name = "${name}");
+DELETE_ACCOUNT_BY_NAME = """
+DELETE FROM accounts WHERE (name = ?);
 """
-)
 
-DELETE_ACCOUNT_BY_ID = Template(
-    """
-DELETE FROM accounts WHERE (id = ${id});
+DELETE_ACCOUNT_BY_ID = """
+DELETE FROM accounts WHERE (id = ?);
 """
-)
 
 
 class Account(BaseModel):
@@ -68,9 +58,8 @@ async def create_table(db: aiosqlite.Connection):
 
 
 async def add_account(db: aiosqlite.Connection, name: str) -> Optional[int]:
-    cmd = ADD_ACCOUNT.safe_substitute({"name": name})
     try:
-        cursor = await db.execute(cmd)
+        cursor = await db.execute(ADD_ACCOUNT, [name])
         await db.commit()
         return cursor.lastrowid
     # Unique constraint failed
@@ -99,17 +88,16 @@ async def get_accounts(db: aiosqlite.Connection) -> list[Account]:
     return [Account(id=row["id"], name=row["name"]) for row in rows]
 
 
-async def get_account(db: aiosqlite.Connection, search: int | str) -> Account | None:
+async def get_account(db: aiosqlite.Connection, account: int | str) -> Account | None:
     """
     Get account by id or name
     """
     db.row_factory = aiosqlite.Row
-    if isinstance(search, int):
-        cmd = GET_ACCOUNT_BY_ID.safe_substitute({"id": search})
+    if isinstance(account, int):
+        cursor = await db.execute(GET_ACCOUNT_BY_ID, [account])
     else:
-        cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": search})
+        cursor = await db.execute(GET_ACCOUNT_BY_NAME, [account])
 
-    cursor = await db.execute(cmd)
     row = await cursor.fetchone()
     if row:
         return Account(id=row["id"], name=row["name"])
@@ -121,8 +109,7 @@ async def get_account_from_card(
     db: aiosqlite.Connection, card_id: str
 ) -> Account | None:
     db.row_factory = aiosqlite.Row
-    cmd = GET_ACCOUNT_BY_CARD.safe_substitute({"id": card_id})
-    cursor = await db.execute(cmd)
+    cursor = await db.execute(GET_ACCOUNT_BY_CARD, [card_id])
     row = await cursor.fetchone()
     if row:
         return Account(id=row["id"], name=row["name"])
@@ -130,32 +117,24 @@ async def get_account_from_card(
         return None
 
 
-async def account_exists(db: aiosqlite.Connection, search: int | str) -> int:
+async def account_exists(db: aiosqlite.Connection, account: int | str) -> int:
     """
     Check if an account exists by id[int] or name[str]
     """
     db.row_factory = aiosqlite.Row
-    if isinstance(search, int):
-        cmd = GET_ACCOUNT_BY_ID.safe_substitute({"id": search})
+    if isinstance(account, int):
+        cursor = await db.execute(GET_ACCOUNT_BY_ID, [account])
     else:
-        cmd = GET_ACCOUNT_BY_NAME.safe_substitute({"name": search})
-
-    cursor = await db.execute(cmd)
+        cursor = await db.execute(GET_ACCOUNT_BY_NAME, [account])
     row = await cursor.fetchone()
     if row:
         return True
     return False
 
 
-async def delete_account(
-    db: aiosqlite.Connection, id: Optional[int] = None, name: Optional[str] = None
-):
-    if id:
-        cmd = DELETE_ACCOUNT_BY_ID.safe_substitute({"id": id})
-    elif name:
-        cmd = DELETE_ACCOUNT_BY_NAME.safe_substitute({"name": name})
+async def delete_account(db: aiosqlite.Connection, account: int | str):
+    if isinstance(account, int):
+        await db.execute(DELETE_ACCOUNT_BY_ID, [account])
     else:
-        raise RuntimeError("No arguments sent to delete_account")
-
-    await db.execute(cmd)
+        await db.execute(DELETE_ACCOUNT_BY_NAME, [account])
     await db.commit()

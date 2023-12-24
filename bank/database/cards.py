@@ -1,6 +1,5 @@
 import aiosqlite
 import enum
-from string import Template
 
 from pydantic import BaseModel
 from typing import Optional
@@ -20,12 +19,12 @@ CREATE TABLE IF NOT EXISTS cards (
 
 ADD_CARD_ACCOUNT = """
 INSERT INTO cards (id, type, account_id)
-VALUES ("${id}", "${type}", ${account_id});
+VALUES (?, ?, ?);
 """
 
 ADD_CARD_VALUE = """
 INSERT INTO cards (id, type, value)
-VALUES ("${id}", "${type}", ${value});
+VALUES (?, ?, ?);
 """
 
 GET_ALL_CARDS = """
@@ -44,12 +43,6 @@ class CardType(enum.Enum):
     VALUE = "value"
 
 
-ADD_CARD_SQL = {
-    CardType.ACCOUNT: ADD_CARD_ACCOUNT,
-    CardType.VALUE: ADD_CARD_VALUE,
-}
-
-
 class Card(BaseModel):
     id: str
     type: CardType
@@ -63,11 +56,12 @@ async def create_table(db: aiosqlite.Connection):
 
 
 async def add_card(db: aiosqlite.Connection, card: Card):
-    fields = card.model_dump()
-    fields["type"] = card.type.value
-    sql = Template(ADD_CARD_SQL[card.type])
-    cmd = sql.safe_substitute(fields)
-    await db.execute(cmd)
+    if card.type == CardType.ACCOUNT:
+        await db.execute(ADD_CARD_ACCOUNT, [card.id, card.type.value, card.account_id])
+    elif card.type == CardType.VALUE:
+        await db.execute(ADD_CARD_VALUE, [card.id, card.type.value, card.value])
+    else:
+        raise NotImplementedError(f"add_card not implemented for {card.type}")
     await db.commit()
 
 

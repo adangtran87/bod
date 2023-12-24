@@ -62,7 +62,7 @@ async def add_transaction(db: aiosqlite.Connection, t: Transaction) -> int | Non
     """Add transaction to account if account exists, else do nothing"""
     if t.account_id is None:
         return None
-    if not await account_exists(db, search=t.account_id):
+    if not await account_exists(db, account=t.account_id):
         return None
     cursor = await db.execute(ADD_TRANSACTION, [t.account_id, t.date, t.value, t.note])
     await db.commit()

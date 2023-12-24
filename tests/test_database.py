@@ -87,7 +87,7 @@ async def test_delete_account(test_db):
         await accounts.create_table(db)
         await accounts.add_account(db, "test2")
         await accounts.add_account(db, "test")
-        await accounts.delete_account(db, id=1)
+        await accounts.delete_account(db, account=1)
         data: accounts.Account | None = await accounts.get_account(db, "test")
         assert data is not None
         assert data.name == "test"
@@ -101,7 +101,7 @@ async def test_cursor_lastrowid(test_db):
         await accounts.create_table(db)
         await accounts.add_account(db, "test2")
         await accounts.add_account(db, "test")
-        await accounts.delete_account(db, id=1)
+        await accounts.delete_account(db, account=1)
         last_row = await accounts.add_account(db, "test3")
         assert last_row == 3
 
