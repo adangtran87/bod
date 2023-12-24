@@ -1,3 +1,4 @@
+from datetime import datetime
 import aiosqlite
 
 from pydantic import BaseModel
@@ -7,6 +8,7 @@ from bank.database.accounts import account_exists, get_account_from_card
 CREATE_TRANSACTIONS_TABLE = """
 CREATE TABLE IF NOT EXISTS transactions (
     id INTEGER PRIMARY KEY,
+    date DATETIME NOT NULL,
     value FLOAT NOT NULL,
     account_id INTEGER NULL,
     note TEXT NULL,
@@ -18,8 +20,8 @@ CREATE TABLE IF NOT EXISTS transactions (
 """
 
 ADD_TRANSACTION = """
-INSERT INTO transactions (account_id, value, note)
-VALUES (?, ?, ?);
+INSERT INTO transactions (account_id, date, value, note)
+VALUES (?, ?, ?, ?);
 """
 
 GET_ALL_TRANSACTIONS = """
@@ -27,7 +29,7 @@ SELECT * from transactions;
 """
 
 GET_TRANSACTIONS_FOR_ACCOUNT = """
-SELECT t.id, t.value, t.account_id, t.note
+SELECT t.id, t.date, t.value, t.account_id, t.note
 FROM transactions AS t
 INNER JOIN accounts AS a
 ON a.id == t.account_id
@@ -45,6 +47,7 @@ WHERE t.account_id == ?;
 
 class Transaction(BaseModel):
     id: int
+    date: datetime
     value: float
     account_id: int | None
     note: str | None
@@ -61,7 +64,7 @@ async def add_transaction(db: aiosqlite.Connection, t: Transaction) -> int | Non
         return None
     if not await account_exists(db, search=t.account_id):
         return None
-    cursor = await db.execute(ADD_TRANSACTION, [t.account_id, t.value, t.note])
+    cursor = await db.execute(ADD_TRANSACTION, [t.account_id, t.date, t.value, t.note])
     await db.commit()
     return cursor.lastrowid
 
@@ -73,6 +76,7 @@ async def get_transactions(db: aiosqlite.Connection) -> list[Transaction]:
     return [
         Transaction(
             id=row["id"],
+            date=row["date"],
             value=row["value"],
             account_id=row["account_id"],
             note=row["note"],
@@ -109,6 +113,7 @@ async def get_transactions_for_account(
     return [
         Transaction(
             id=row["id"],
+            date=row["date"],
             value=row["value"],
             account_id=row["account_id"],
             note=row["note"],

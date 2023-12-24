@@ -1,3 +1,4 @@
+from datetime import datetime
 import pytest
 
 import bank.database.accounts as accounts
@@ -162,6 +163,7 @@ async def test_add_transaction(test_db):
         await transactions.create_table(db)
         t = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=1,
             value=10.0,
             note=None,
@@ -185,6 +187,7 @@ async def test_get_transactions(test_db):
         assert account_id is not None
         t = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account_id,
             value=10.0,
             note=None,
@@ -210,6 +213,7 @@ async def test_add_transaction_from_card_id(init_db):
         account_id = await accounts.add_account_with_card(db, "test", "test_card_id")
         t = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account_id,
             value=10.0,
             note=None,
@@ -234,6 +238,7 @@ async def test_get_transactions_for_account(init_db):
         assert account1 is not None
         t = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account1,
             value=10.0,
             note=None,
@@ -242,6 +247,7 @@ async def test_get_transactions_for_account(init_db):
         assert t_id is not None
         t2 = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account1,
             value=20.0,
             note=None,
@@ -253,6 +259,7 @@ async def test_get_transactions_for_account(init_db):
         assert account2 is not None
         t3 = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account2,
             value=30.0,
             note=None,
@@ -277,6 +284,7 @@ async def test_get_total_for_account(init_db):
         assert account1 is not None
         t = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account1,
             value=10.0,
             note=None,
@@ -285,6 +293,7 @@ async def test_get_total_for_account(init_db):
         assert t_id is not None
         t2 = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account1,
             value=20.0,
             note=None,
@@ -296,6 +305,7 @@ async def test_get_total_for_account(init_db):
         assert account2 is not None
         t3 = transactions.Transaction(
             id=0,  # not used
+            date=datetime.now(),
             account_id=account2,
             value=30.0,
             note=None,

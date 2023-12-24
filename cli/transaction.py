@@ -1,4 +1,5 @@
 from asyncio import run as aiorun
+from datetime import datetime
 from pprint import pprint
 from typing_extensions import Annotated
 from typing import Optional
@@ -47,7 +48,9 @@ def add(
         r = await scan_card(device)
         if isinstance(r, Ok):
             card_id = r.ok_value
-            t = transactions.Transaction(id=0, value=value, account_id=0, note=note)
+            t = transactions.Transaction(
+                id=0, date=datetime.now(), value=value, account_id=0, note=note
+            )
             async with await database.get_db() as db:
                 t_id = await transactions.add_transaction_from_card_id(
                     db, card_id=card_id, t=t
