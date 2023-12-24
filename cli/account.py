@@ -8,6 +8,7 @@ from result import Err, Ok, Result
 
 import bank.database.accounts as accounts
 import bank.database.database as database
+import bank.database.utils as db_utils
 
 from cli.utils import scan_card
 
@@ -86,6 +87,61 @@ def dump():
             return await accounts.get_accounts(db)
 
     pprint(aiorun(_get_accounts()))
+
+
+@app.command()
+def info(
+    id: Annotated[Optional[int], typer.Option(help="Account ID")] = None,
+    name: Annotated[Optional[str], typer.Option(help="Account Name")] = None,
+    scan: Annotated[bool, typer.Option(help="Register a card")] = False,
+    device: Annotated[
+        str, typer.Option(help="Device location string")
+    ] = "tty:USB0:pn532",
+):
+    async def _get_account_info(
+        id: int | None, name: str | None, scan: bool, device
+    ) -> Result[dict, str]:
+        async with await database.get_db() as db:
+            account = None
+            account_info: int | str
+            if id:
+                account = await accounts.get_account(db, id)
+                account_info = id
+            elif name:
+                account = await accounts.get_account(db, name)
+                account_info = name
+            elif scan:
+                r = await scan_card(device)
+                if isinstance(r, Ok):
+                    card_id = r.ok_value
+                else:
+                    return Err(r.err_value)
+                account = await accounts.get_account_from_card(db, card_id)
+                account_info = f"card_id: {card_id}"
+            else:
+                return Err("No identifier to find an account")
+
+            if account:
+                return Ok(await db_utils.get_account_info(db, account))
+            else:
+                return Err(f"Account {account_info} not found")
+
+    """
+    Get information about an account
+    
+    Identify an account by using --id or --name or --scan a card
+    """
+    if (id and name) or (id and scan) or (name and scan):
+        print("Only use **one of** --id, --name, --scan")
+
+    if not (id or name or scan):
+        print("Please use **one** of --id, n--name, --scan")
+
+    r = aiorun(_get_account_info(id, name, scan, device))
+    if isinstance(r, Ok):
+        pprint(r.ok_value)
+    else:
+        pprint(f"ERROR: {r.err_value}")
 
 
 @app.command()
