@@ -316,3 +316,29 @@ async def test_get_total_for_account(init_db):
         assert await transactions.get_total_for_account(db, account1) == 30
         assert await transactions.get_total_for_account(db, account2) == 30
         assert await transactions.get_total_for_account(db, 100) is None
+
+
+@pytest.mark.asyncio
+async def test_get_cards_for_account(init_db):
+    async for db in init_db:
+        acc = await accounts.add_account(db, "test")
+        assert acc is not None
+        c1 = cards.Card(
+            id="card1", type=cards.CardType.ACCOUNT, account_id=acc, value=None
+        )
+        await cards.add_card(db, c1)
+        c2 = cards.Card(
+            id="card2", type=cards.CardType.ACCOUNT, account_id=acc, value=None
+        )
+        await cards.add_card(db, c2)
+        c3 = cards.Card(
+            id="card3", type=cards.CardType.ACCOUNT, account_id=acc, value=None
+        )
+        await cards.add_card(db, c3)
+
+        data = await cards.get_cards_for_account(db, account_id=acc)
+        assert len(data) == 3
+
+        assert data[0] == c1
+        assert data[1] == c2
+        assert data[2] == c3

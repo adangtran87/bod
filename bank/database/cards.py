@@ -32,6 +32,11 @@ GET_ALL_CARDS = """
 SELECT * FROM cards;
 """
 
+GET_CARDS_FOR_ACCOUNT = """
+SELECT * FROM cards
+WHERE cards.account_id = (?);
+"""
+
 
 class CardType(enum.Enum):
     UNKNOWN = "unknown"
@@ -69,6 +74,22 @@ async def add_card(db: aiosqlite.Connection, card: Card):
 async def get_cards(db: aiosqlite.Connection) -> list[Card]:
     db.row_factory = aiosqlite.Row
     cursor = await db.execute(GET_ALL_CARDS)
+    rows = await cursor.fetchall()
+    return [
+        Card(
+            id=row["id"],
+            type=row["type"],
+            account_id=row["account_id"],
+            value=row["value"],
+        )
+        for row in rows
+    ]
+
+
+async def get_cards_for_account(db: aiosqlite.Connection, account_id: int):
+    """Get all cards for a given account"""
+    db.row_factory = aiosqlite.Row
+    cursor = await db.execute(GET_CARDS_FOR_ACCOUNT, [account_id])
     rows = await cursor.fetchall()
     return [
         Card(
