@@ -20,3 +20,26 @@ async def init_db(test_db):
         await cards.create_table(db)
         await transactions.create_table(db)
         yield db
+
+
+# TODO: Clean up database pattern
+async def seeded_db():
+    """Return a database connection for use as a dependency.
+    This connection has the Row row factory automatically attached."""
+
+    db = await aiosqlite.connect("file::memory:")
+    # Provide a smarter version of the results. This keeps from having to unpack
+    # tuples manually.
+    db.row_factory = aiosqlite.Row
+
+    await accounts.create_table(db)
+    await cards.create_table(db)
+    await transactions.create_table(db)
+
+    await accounts.add_account(db, "test1")
+    await accounts.add_account_with_card(db, "test2", "card1")
+
+    try:
+        yield db
+    finally:
+        await db.close()
