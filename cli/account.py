@@ -68,7 +68,7 @@ def delete(
             if not await accounts.account_exists(db, search):
                 return Err(f"No account found when searching for {search}")
 
-            await accounts.delete_account(db, id, name)
+            await accounts.delete_account(db, search)
             return Ok(None)
 
     if id:
