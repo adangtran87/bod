@@ -384,3 +384,25 @@ async def test_get_account_info(init_db):
         assert info.card_ids == ["card1"]
         assert len(info.transactions) == 2
         assert info.transactions[0].date > info.transactions[1].date
+
+
+@pytest.mark.asyncio
+async def test_get_same_transaction_twice(init_db):
+    async for db in init_db:
+        account_id = await accounts.add_account(db, "test")
+        assert account_id is not None
+        t = transactions.Transaction(
+            id=0,  # not used
+            date=datetime.now(),
+            account_id=account_id,
+            value=10.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t)
+        assert t_id is not None
+        get1 = await transactions.get_transactions_for_account(db, account_id)
+        get2 = await transactions.get_transactions_for_account(db, account_id)
+
+        assert get1 == get2
+        assert len(get1) == 1
+        assert get1[0].date == get2[0].date
