@@ -72,3 +72,15 @@ def test_account_create_already_existing():
 
     response = client.post("/account/create/", json=acc.model_dump())
     assert response.status_code == 409
+
+
+def test_account_info():
+    account_id = 1
+    response = client.get(f"/account/info/{account_id}")
+    assert response.status_code == 200
+    info = response.json()
+
+    assert info["account"] == accounts.Account(id=account_id, name="test1").model_dump()
+    assert info["card_ids"] == ["card1"]
+    assert len(info["transactions"]) == 2
+    assert info["transactions"][0]["date"] > info["transactions"][1]["date"]

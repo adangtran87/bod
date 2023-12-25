@@ -55,14 +55,23 @@ async def create_table(db: aiosqlite.Connection):
     await db.commit()
 
 
-async def add_card(db: aiosqlite.Connection, card: Card):
+async def add_card(db: aiosqlite.Connection, card: Card) -> int | None:
+    card_id: int | None = None
     if card.type == CardType.ACCOUNT:
-        await db.execute(ADD_CARD_ACCOUNT, [card.id, card.type.value, card.account_id])
+        cursor = await db.execute(
+            ADD_CARD_ACCOUNT, [card.id, card.type.value, card.account_id]
+        )
+        card_id = cursor.lastrowid
     elif card.type == CardType.VALUE:
-        await db.execute(ADD_CARD_VALUE, [card.id, card.type.value, card.value])
+        cursor = await db.execute(
+            ADD_CARD_VALUE, [card.id, card.type.value, card.value]
+        )
+        card_id = cursor.lastrowid
     else:
         raise NotImplementedError(f"add_card not implemented for {card.type}")
     await db.commit()
+
+    return card_id
 
 
 async def get_cards(db: aiosqlite.Connection) -> list[Card]:

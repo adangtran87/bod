@@ -1,9 +1,11 @@
 from datetime import datetime
 import pytest
+from result import Ok
 
 import bank.database.accounts as accounts
 import bank.database.cards as cards
 import bank.database.transactions as transactions
+import bank.database.utils as db_utils
 
 
 @pytest.mark.asyncio
@@ -342,3 +344,43 @@ async def test_get_cards_for_account(init_db):
         assert data[0] == c1
         assert data[1] == c2
         assert data[2] == c3
+
+
+@pytest.mark.asyncio
+async def test_get_account_info(init_db):
+    async for db in init_db:
+        account1 = await accounts.add_account(db, "test")
+        assert account1 is not None
+
+        c1 = cards.Card(
+            id="card1", type=cards.CardType.ACCOUNT, account_id=account1, value=None
+        )
+        c_id = await cards.add_card(db, c1)
+        assert c_id is not None
+
+        t1 = transactions.Transaction(
+            id=0,  # not used
+            date=datetime.now(),
+            account_id=account1,
+            value=10.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t1)
+        assert t_id is not None
+        t2 = transactions.Transaction(
+            id=0,  # not used
+            date=datetime.now(),
+            account_id=account1,
+            value=20.0,
+            note=None,
+        )
+        t_id = await transactions.add_transaction(db, t2)
+        assert t_id is not None
+
+        r = await db_utils.get_account_info(db, account1)
+        assert isinstance(r, Ok)
+        info = r.ok_value
+        assert info.account == accounts.Account(id=account1, name="test")
+        assert info.card_ids == ["card1"]
+        assert len(info.transactions) == 2
+        assert info.transactions[0].date > info.transactions[1].date

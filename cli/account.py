@@ -100,7 +100,7 @@ def info(
 ):
     async def _get_account_info(
         id: int | None, name: str | None, scan: bool, device
-    ) -> Result[dict, str]:
+    ) -> Result[db_utils.AccountInfo, str]:
         async with await database.get_db() as db:
             account = None
             account_info: int | str
@@ -122,7 +122,7 @@ def info(
                 return Err("No identifier to find an account")
 
             if account:
-                return Ok(await db_utils.get_account_info(db, account))
+                return await db_utils.get_account_info(db, account.id)
             else:
                 return Err(f"Account {account_info} not found")
 
