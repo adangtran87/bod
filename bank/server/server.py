@@ -1,6 +1,6 @@
 import aiosqlite
 from fastapi import FastAPI, Depends, HTTPException
-from result import Ok, Err, Result
+from result import Ok
 
 import bank.database.accounts as accounts
 import bank.database.utils as db_utils

@@ -1,5 +1,4 @@
-import pytest
-from conftest import seeded_db
+from .conftest import seeded_db
 from pprint import pprint
 
 from fastapi.testclient import TestClient
